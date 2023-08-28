@@ -22,6 +22,7 @@ public class SnsStack extends Stack {
                         .create(this, "ProductEventTopic")
                         .topicName("product-event-topic")
                         .build())
+
                 .build();
 
 

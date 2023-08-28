@@ -1,20 +1,3 @@
-buildscript {
-	ext {
-		springBootVersion = '2.4.0-SNAPSHOT'
-	}
-	repositories {
-		mavenCentral()
-		maven {
-			url "https://plugins.gradle.org/m2/"
-		}
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-		classpath('gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1')
-	}
-
-}
-
 plugins {
 	id 'org.springframework.boot' version '2.4.0-SNAPSHOT'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
@@ -26,21 +9,26 @@ group = 'burbes'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '15'
 
+ext {
+	awsSdkVersion = '1.11.887'
+	springJmsVersion = '5.2.9.RELEASE'
+	mariadbVersion = '3.1.4'
+	sqsJavaMessagingLibVersion = '1.0.8'
+}
+
 bootJar {
 	baseName = 'curso_aws_project01'
-	version =  '1.6.0'
+	version = '1.9.0'
 	mainClassName = "br.com.siecola.aws_project01.AwsProject01Application"
 }
 
-
-// Docker push
 task unpack(type: Copy) {
+	description = 'Unpacks the JAR for Docker image creation'
 	dependsOn bootJar
 	from(zipTree(tasks.bootJar.outputs.files.singleFile))
-//	from(zipTree("${buildDir}/libs/${bootJar.baseName}-${bootJar.version}.jar"))
-
 	into("build/dependency")
 }
+
 docker {
 	name "${project.group}/${bootJar.baseName}"
 	tags "${bootJar.version}"
@@ -49,6 +37,7 @@ docker {
 }
 
 task dockerBuildx(type: Exec) {
+	description = 'Builds Docker image using buildx for x86_64 architecture'
 	dependsOn unpack
 	commandLine 'docker', 'buildx', 'build', '--platform', 'linux/amd64', '-t', "${project.group}/${bootJar.baseName}:${bootJar.version}", '.', '--push'
 }
@@ -62,16 +51,17 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation "com.amazonaws:aws-java-sdk-sns:${awsSdkVersion}"
+	implementation "com.amazonaws:aws-java-sdk-sqs:${awsSdkVersion}"
 
-	// #SNS
-	implementation 'com.amazonaws:aws-java-sdk-sns:1.11.887'
+	implementation "com.amazonaws:aws-java-sdk-s3:${awsSdkVersion}"
 
-	// #SQS
-	implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.11.887'
+	implementation "com.amazonaws:aws-java-sdk-sqs:${awsSdkVersion}"
+	implementation "org.springframework:spring-jms:${springJmsVersion}"
+	implementation "com.amazonaws:amazon-sqs-java-messaging-lib:${sqsJavaMessagingLibVersion}"
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.1.4'
-
+	implementation "org.mariadb.jdbc:mariadb-java-client:${mariadbVersion}"
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

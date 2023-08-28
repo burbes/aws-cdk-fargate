@@ -75,6 +75,17 @@
             <version>0.33.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>s3</artifactId>
+            <version> 0.33.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>s3-notifications</artifactId>
+            <version> 0.33.0</version>
+        </dependency>
 
         <dependency>
             <groupId>software.constructs</groupId>

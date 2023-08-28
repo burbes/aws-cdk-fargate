@@ -1,20 +1,3 @@
-buildscript {
-	ext {
-		springBootVersion = '2.4.0'
-	}
-	repositories {
-		mavenCentral()
-		maven {
-			url "https://plugins.gradle.org/m2/"
-		}
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-		classpath('gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1')
-	}
-
-}
-
 plugins {
 	id 'org.springframework.boot' version '2.4.0'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
@@ -26,24 +9,35 @@ group = 'burbes'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '15'
 
+ext {
+	awsSdkVersion = '1.11.887'
+	springJmsVersion = '5.2.9.RELEASE'
+	sqsJavaMessagingLibVersion = '1.0.8'
+	springDataDynamoDbVersion = '5.2.1'
+}
+
 bootJar {
 	baseName = 'curso_aws_project02'
-	version =  '1.5.0'
+	version = '1.7.0'
 	mainClassName = "br.com.siecola.aws_project02.AwsProject02Application"
 }
 
 task unpack(type: Copy) {
+	description = 'Unpacks the JAR for Docker image creation'
 	dependsOn bootJar
 	from(zipTree(tasks.bootJar.outputs.files.singleFile))
 	into("build/dependency")
 }
+
 docker {
 	name "${project.group}/${bootJar.baseName}"
 	tags "${bootJar.version}"
 	copySpec.from(tasks.unpack.outputs).into("dependency")
 	buildArgs(['DEPENDENCY': "dependency"])
 }
+
 task dockerBuildx(type: Exec) {
+	description = 'Builds Docker image using buildx for x86_64 architecture'
 	dependsOn unpack
 	commandLine 'docker', 'buildx', 'build', '--platform', 'linux/amd64', '-t', "${project.group}/${bootJar.baseName}:${bootJar.version}", '.', '--push'
 }
@@ -57,14 +51,11 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-	implementation group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: '1.11.887'
-	implementation group: 'io.github.boostchicken', name: 'spring-data-dynamodb', version: '5.2.1'
-
-	implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.11.887'
-	implementation group: 'org.springframework', name: 'spring-jms', version: '5.2.9.RELEASE'
-	implementation group: 'com.amazonaws', name: 'amazon-sqs-java-messaging-lib', version: '1.0.8'
-
+	implementation "com.amazonaws:aws-java-sdk-dynamodb:${awsSdkVersion}"
+	implementation "io.github.boostchicken:spring-data-dynamodb:${springDataDynamoDbVersion}"
+	implementation "com.amazonaws:aws-java-sdk-sqs:${awsSdkVersion}"
+	implementation "org.springframework:spring-jms:${springJmsVersion}"
+	implementation "com.amazonaws:amazon-sqs-java-messaging-lib:${sqsJavaMessagingLibVersion}"
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

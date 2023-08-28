@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Service02Stack extends Stack {
+
     public Service02Stack(final Construct scope, final String id, Cluster cluster, SnsTopic productEventTopic, Table productEventsDynamoDBTable) {
         this(scope, id, null, cluster, productEventTopic, productEventsDynamoDBTable);
     }
@@ -75,7 +76,7 @@ public class Service02Stack extends Stack {
                         .taskImageOptions(
                                 ApplicationLoadBalancedTaskImageOptions.builder()
                                         .containerName("aws-cdk-ecs-sample")
-                                        .image(ContainerImage.fromRegistry("burbes/curso_aws_project02:1.5.0"))
+                                        .image(ContainerImage.fromRegistry("burbes/curso_aws_project02:1.7.0"))
                                         .containerPort(9090)
                                         .logDriver(LogDrivers.awsLogs(
                                                         AwsLogDriverProps.builder()
